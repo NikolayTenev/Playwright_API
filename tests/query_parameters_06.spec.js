@@ -1,0 +1,58 @@
+const { test, expect } = require("@playwright/test");
+
+import exp from "constants";
+import { stringFormat } from "../utils/common";
+
+const bookingAPIRequestBody = require('../test-data/post_dynamic_request_body.json');
+
+test("Query parameters  in playwright", async ({
+  request,
+}) => {
+
+  const dynamicRequestBody =  stringFormat(JSON.stringify(bookingAPIRequestBody), "testers talk cypress", "testers talk javascript", "orange")
+
+  // Create POST api request
+  const postAPIResponse = await request.post("/booking", {
+    data: JSON.parse(dynamicRequestBody)
+  });
+
+  //Validate status code
+  expect(postAPIResponse.ok()).toBeTruthy();
+  expect(postAPIResponse.status()).toBe(200);
+
+  const postAPIResponseBody = await postAPIResponse.json();
+  console.log(postAPIResponseBody);
+
+  const bId = postAPIResponseBody.bookingid;
+
+  // Validate JSON api response
+
+  expect(postAPIResponseBody.booking).toHaveProperty(
+    "firstname",
+    "testers talk cypress"
+  );
+  expect(postAPIResponseBody.booking).toHaveProperty(
+    "lastname",
+    "testers talk javascript"
+  );
+
+
+  console.log("===================")
+
+
+  //Get api call
+    const getAPIResponse = await request.get(`/booking/`, {
+        params:{
+            "firstname": "testers talk cypress",
+             "lastname": "testers talk javascript"
+        }
+    })
+    console.log(await getAPIResponse.json());
+
+
+    //Validate status code
+    expect(getAPIResponse.ok()).toBeTruthy();
+    expect(getAPIResponse.status()).toBe(200);
+
+
+});
